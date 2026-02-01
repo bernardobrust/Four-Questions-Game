@@ -1,4 +1,4 @@
-const AVAILABLE_TOPICS = ['biology'];
+const AVAILABLE_TOPICS = ['biologia'];
 
 const topicsContainer = document.getElementById('topics-container');
 const topicsSection = document.getElementById('topics-section');
@@ -68,10 +68,10 @@ function pickRandomQuestion() {
     if (unansweredQuestions.length === 0) {
         // All questions answered
         if (questionTextElement) questionTextElement.textContent = "Parabéns! Você respondeu todas as perguntas!";
-        if(hintsContainer) hintsContainer.innerHTML = '';
-        if(answerContainer) answerContainer.classList.add('hidden');
-        if(showAnswerButton) showAnswerButton.classList.add('hidden');
-        if(nextButton) nextButton.classList.add('hidden');
+        if (hintsContainer) hintsContainer.innerHTML = '';
+        if (answerContainer) answerContainer.classList.add('hidden');
+        if (showAnswerButton) showAnswerButton.classList.add('hidden');
+        if (nextButton) nextButton.classList.add('hidden');
         // Maybe add a "Restart" button here
         return;
     }
@@ -161,7 +161,7 @@ function revealAnswer() {
     }
 
     // Add to answered list
-    if(!answeredQuestions.includes(selectedQuestionName)) {
+    if (!answeredQuestions.includes(selectedQuestionName)) {
         answeredQuestions.push(selectedQuestionName);
     }
 

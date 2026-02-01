@@ -2,7 +2,8 @@
   "compilerOptions": {
     // Environment setup & latest features
     "lib": [
-      "dom"
+      "dom",
+      "ES2023"
     ],
     "target": "ESNext",
     "module": "Preserve",
