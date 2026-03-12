@@ -1,4 +1,4 @@
-const AVAILABLE_TOPICS = ['biologia', 'historia', 'geografia', 'literatura'];
+const AVAILABLE_TOPICS = ['fisiologia'];
 
 // --- DOM Elements ---
 const rouletteSection = document.getElementById('roulette-section');
@@ -42,8 +42,8 @@ async function selectTopic(topicName: string) {
         console.log("Loaded questions for topic:", topicName, currentTopicQuestions);
 
         // Update UI to reflect selected topic and enable starting question
-        if (rouletteSection) rouletteSection.classList.remove('hidden');
-        if (rouletteDisplayElement) rouletteDisplayElement.textContent = `Tópico selecionado: ${topicName}`;
+        if (rouletteSection) rouletteSection.classList.remove('hidden'); // Keep roulette section visible
+        if (rouletteDisplayElement) rouletteDisplayElement.textContent = "Pronto para responder?";
         if (spinButton) {
             spinButton.disabled = false;
             spinButton.textContent = "Iniciar Pergunta";
@@ -59,7 +59,7 @@ async function selectTopic(topicName: string) {
 }
 
 
-function spinRoulette() {
+function spinRoulette() { // Renamed back to spinRoulette
     // Hide question-related sections
     if (questionSection) questionSection.classList.add('hidden');
     if (answerContainer) answerContainer.classList.add('hidden');
@@ -71,15 +71,15 @@ function spinRoulette() {
     if (rouletteSection) rouletteSection.classList.remove('hidden');
     if (spinButton) spinButton.classList.remove('hidden'); // Ensure spin button is visible for spinning
 
-    const randomIndex = Math.floor(Math.random() * AVAILABLE_TOPICS.length);
-    const chosenTopic = AVAILABLE_TOPICS[randomIndex]!;
+    // No random selection needed, topic is fixed to 'fisiologia' as per AVAILABLE_TOPICS
+    const chosenTopic = AVAILABLE_TOPICS[0]!;
 
     if (rouletteDisplayElement && spinButton) {
         rouletteDisplayElement.textContent = `Girando...`;
         spinButton.disabled = true; // Disable spin button during animation
 
         setTimeout(() => {
-            selectTopic(chosenTopic); // This will handle re-enabling spinButton and setting its onClick
+            selectTopic(chosenTopic); // Selects the topic after spin
             spinButton.disabled = false; // Re-enable regardless of selectTopic result for user feedback
         }, 1500); // Simulate spin time
     }
@@ -107,14 +107,15 @@ function pickRandomQuestion() {
         if (hintTimerControls) hintTimerControls.classList.add('hidden');
 
         if (questionSection) questionSection.classList.add('hidden'); // Hide question section
-        if (rouletteSection) rouletteSection.classList.remove('hidden'); // Show roulette section
+        if (rouletteSection) rouletteSection.classList.remove('hidden'); // Show roulette section for message
 
-        if (rouletteDisplayElement) rouletteDisplayElement.textContent = "Tópico Concluído! Gire a roleta para um novo.";
+        if (rouletteDisplayElement) rouletteDisplayElement.textContent = "Todas as perguntas de Fisiologia foram respondidas! Clique para reiniciar.";
         if (spinButton) {
-            spinButton.onclick = spinRoulette; // Allow spinning for a new topic
-            spinButton.textContent = "Girar Roleta"; // Reset button text
+            spinButton.onclick = pickRandomQuestion; // Allow restarting questions from the same topic
+            spinButton.textContent = "Reiniciar Perguntas"; // Reset button text
             spinButton.classList.remove('hidden'); // Ensure spin button is visible
         }
+        answeredQuestions = []; // Reset answered questions to allow playing again
         return;
     }
 
@@ -253,7 +254,7 @@ function resetQuestionStateAndSpinRoulette() {
     if (hintsContainer) hintsContainer.innerHTML = '';
     if (hintTimerControls) hintTimerControls.classList.add('hidden');
     if (hintTimerDisplay) hintTimerDisplay.textContent = '';
-    if (showAnswerButton) showAnswerButton.classList.add('hidden'); // Ensure this is hidden
+    if (showAnswerButton) showAnswerButton.classList.add('hidden');
     if (rouletteDisplayElement) rouletteDisplayElement.textContent = ''; // Clear topic display
 
     questionsAnsweredCount++;
@@ -266,12 +267,7 @@ function resetQuestionStateAndSpinRoulette() {
         scoreDisplayElement.textContent = `Score: ${score}`;
     }
 
-    if (spinButton) {
-        spinButton.textContent = "Girar Roleta"; // Reset button text for new spin
-        spinButton.classList.remove('hidden'); // Ensure spin button is visible for next spin
-        spinButton.onclick = spinRoulette; // Set onclick for new spin
-    }
-    spinRoulette(); // Trigger the roulette to pick a new topic
+    spinRoulette(); // Go back to the roulette state for the next question
 }
 
 
