@@ -1,0 +1,23 @@
+{
+    "Qual é o maior deserto do mundo?": {
+        "Hint 1": "Não é um deserto quente.",
+        "Hint 2": "Está localizado nos polos da Terra.",
+        "Hint 3": "Cobre uma área de cerca de 14 milhões de quilômetros quadrados.",
+        "Hint 4": "É o continente mais frio, seco e alto.",
+        "Answer": "Antártida"
+    },
+    "Qual é o rio mais longo do mundo?": {
+        "Hint 1": "Flui por 11 países.",
+        "Hint 2": "Desemboca no Mar Mediterrâneo.",
+        "Hint 3": "Foi crucial para o desenvolvimento de uma antiga civilização.",
+        "Hint 4": "Sua bacia hidrográfica cobre cerca de 3,3 milhões de quilômetros quadrados.",
+        "Answer": "Rio Nilo"
+    },
+    "Qual é a montanha mais alta do mundo?": {
+        "Hint 1": "Está localizada na cordilheira do Himalaia.",
+        "Hint 2": "Seu cume está a 8.848 metros acima do nível do mar.",
+        "Hint 3": "É um desafio para alpinistas de todo o mundo.",
+        "Hint 4": "Seu nome é uma homenagem a um geógrafo britânico.",
+        "Answer": "Monte Everest"
+    }
+}

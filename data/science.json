@@ -1,0 +1,23 @@
+{
+    "Qual é o planeta mais próximo do Sol?": {
+        "Hint 1": "É um planeta rochoso.",
+        "Hint 2": "Não tem luas.",
+        "Hint 3": "Seu nome é uma homenagem a um deus romano.",
+        "Hint 4": "É o menor planeta do nosso sistema solar.",
+        "Answer": "Mercúrio"
+    },
+    "Qual é a fórmula química da água?": {
+        "Hint 1": "É composta por dois elementos.",
+        "Hint 2": "É essencial para a vida.",
+        "Hint 3": "É um solvente universal.",
+        "Hint 4": "Sua molécula tem uma forma angular.",
+        "Answer": "H2O"
+    },
+    "Quem desenvolveu a teoria da relatividade?": {
+        "Hint 1": "Ele era um físico alemão.",
+        "Hint 2": "Publicou sua teoria em 1915.",
+        "Hint 3": "É famoso por sua equação E=mc².",
+        "Hint 4": "Seu nome é sinônimo de gênio.",
+        "Answer": "Albert Einstein"
+    }
+}

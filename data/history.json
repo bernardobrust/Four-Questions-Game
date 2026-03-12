@@ -1,0 +1,23 @@
+{
+    "Quem foi o primeiro presidente do Brasil?": {
+        "Hint 1": "Ele era um militar.",
+        "Hint 2": "Proclamou a República em 1889.",
+        "Hint 3": "Seu governo foi marcado por tensões políticas.",
+        "Hint 4": "Seu nome está associado a uma cidade em Santa Catarina.",
+        "Answer": "Marechal Deodoro da Fonseca"
+    },
+    "Em que ano começou a Segunda Guerra Mundial?": {
+        "Hint 1": "Foi um conflito global.",
+        "Hint 2": "Começou com a invasão da Polônia pela Alemanha.",
+        "Hint 3": "Durou seis anos.",
+        "Hint 4": "Ocorreu no século XX.",
+        "Answer": "1939"
+    },
+    "Quem foi o líder da Revolução Russa de 1917?": {
+        "Hint 1": "Ele era um teórico marxista.",
+        "Hint 2": "Liderou o partido bolchevique.",
+        "Hint 3": "Seu corpo está em exposição em Moscou.",
+        "Hint 4": "Seu nome verdadeiro era Vladimir Ilyich Ulyanov.",
+        "Answer": "Lênin"
+    }
+}
