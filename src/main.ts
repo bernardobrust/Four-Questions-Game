@@ -1,38 +1,34 @@
-const AVAILABLE_TOPICS = ['biologia'];
+const AVAILABLE_TOPICS = ['biologia', 'historia', 'geografia', 'literatura'];
 
-const topicsContainer = document.getElementById('topics-container');
-const topicsSection = document.getElementById('topics-section');
+// --- DOM Elements ---
 const rouletteSection = document.getElementById('roulette-section');
-const questionSection = document.getElementById('question-section');
+const rouletteDisplayElement = document.getElementById('roulette-wheel');
 const spinButton = document.getElementById('spin-button');
+const questionSection = document.getElementById('question-section');
 const questionTextElement = document.getElementById('question-text');
 const hintsContainer = document.getElementById('hints-container');
-const showAnswerButton = document.getElementById('show-answer-button');
-const nextButton = document.getElementById('next-button');
-const timerDisplay = document.getElementById('timer-display');
+const hintTimerControls = document.getElementById('hint-timer-controls');
+const nextHintButton = document.getElementById('next-hint-button');
+const answerNowButton = document.getElementById('answer-now-button');
+const hintTimerDisplay = document.getElementById('hint-timer-display');
+const showAnswerButton = document.getElementById('show-answer-button'); // This button is functionally replaced by answerNowButton but may still be in HTML
 const answerContainer = document.getElementById('answer-container');
 const answerTextElement = document.getElementById('answer-text');
+const correctWrongContainer = document.getElementById('correct-wrong-container');
+const gotRightButton = document.getElementById('got-right-button');
+const gotWrongButton = document.getElementById('got-wrong-button');
 const themeSwitch = document.getElementById('checkbox') as HTMLInputElement;
+const scoreDisplayElement = document.getElementById('score-display');
 
-// State management
+// --- State Management ---
 let currentTopicQuestions: { [key: string]: any } = {};
 let answeredQuestions: string[] = [];
 let selectedQuestionName: string | null = null;
-let countdownTimer: number | undefined;
-
-
-async function loadTopicButtons() {
-    if (topicsContainer) {
-        topicsContainer.innerHTML = ''; // Clear existing content
-        AVAILABLE_TOPICS.forEach(topicName => {
-            const button = document.createElement('button');
-            button.classList.add('topic-button');
-            button.textContent = topicName;
-            button.onclick = () => selectTopic(topicName);
-            topicsContainer.appendChild(button);
-        });
-    }
-}
+let hintCountdownTimer: number | undefined; // Specific timer for hints
+let hintsUsedInQuestion: number = 0;
+let currentHintIndex: number = 0;
+let score: number = 0;
+let questionsAnsweredCount: number = 0;
 
 async function selectTopic(topicName: string) {
     console.log(`Selected topic: ${topicName}`);
@@ -45,34 +41,80 @@ async function selectTopic(topicName: string) {
         answeredQuestions = []; // Reset answered questions when a new topic is selected
         console.log("Loaded questions for topic:", topicName, currentTopicQuestions);
 
-        // Hide topics section
-        if (topicsSection) {
-            topicsSection.classList.add('hidden');
-        }
-
-        // Show roulette section
-        if (rouletteSection) {
-            rouletteSection.classList.remove('hidden');
+        // Update UI to reflect selected topic and enable starting question
+        if (rouletteSection) rouletteSection.classList.remove('hidden');
+        if (rouletteDisplayElement) rouletteDisplayElement.textContent = `Tópico selecionado: ${topicName}`;
+        if (spinButton) {
+            spinButton.disabled = false;
+            spinButton.textContent = "Iniciar Pergunta";
+            spinButton.onclick = pickRandomQuestion; // Assign only after successful load
+            spinButton.classList.remove('hidden'); // Ensure spin button is visible
         }
     } catch (error) {
         console.error(`Failed to load questions for topic ${topicName}:`, error);
-        if (topicsContainer) {
-            topicsContainer.innerHTML = `<p>Erro ao carregar perguntas para o tópico "${topicName}". Por favor, tente novamente mais tarde.</p>`;
+        if (rouletteDisplayElement) {
+            rouletteDisplayElement.textContent = `<p>Erro ao carregar perguntas para o tópico "${topicName}". Por favor, tente novamente mais tarde.</p>`;
         }
     }
 }
 
+
+function spinRoulette() {
+    // Hide question-related sections
+    if (questionSection) questionSection.classList.add('hidden');
+    if (answerContainer) answerContainer.classList.add('hidden');
+    if (correctWrongContainer) correctWrongContainer.classList.add('hidden');
+    if (hintTimerControls) hintTimerControls.classList.add('hidden');
+    if (showAnswerButton) showAnswerButton.classList.add('hidden'); // Ensure old show answer is hidden
+
+    // Show roulette section
+    if (rouletteSection) rouletteSection.classList.remove('hidden');
+    if (spinButton) spinButton.classList.remove('hidden'); // Ensure spin button is visible for spinning
+
+    const randomIndex = Math.floor(Math.random() * AVAILABLE_TOPICS.length);
+    const chosenTopic = AVAILABLE_TOPICS[randomIndex]!;
+
+    if (rouletteDisplayElement && spinButton) {
+        rouletteDisplayElement.textContent = `Girando...`;
+        spinButton.disabled = true; // Disable spin button during animation
+
+        setTimeout(() => {
+            selectTopic(chosenTopic); // This will handle re-enabling spinButton and setting its onClick
+            spinButton.disabled = false; // Re-enable regardless of selectTopic result for user feedback
+        }, 1500); // Simulate spin time
+    }
+}
+
+
 function pickRandomQuestion() {
+    hintsUsedInQuestion = 0;
+    currentHintIndex = 0;
+    clearTimeout(hintCountdownTimer); // Clear any previous hint timers
+    if (hintCountdownTimer !== undefined) {
+        clearInterval(hintCountdownTimer);
+        hintCountdownTimer = undefined;
+    }
+
+
     const unansweredQuestions = Object.keys(currentTopicQuestions).filter(q => !answeredQuestions.includes(q));
 
     if (unansweredQuestions.length === 0) {
-        // All questions answered
-        if (questionTextElement) questionTextElement.textContent = "Parabéns! Você respondeu todas as perguntas!";
+        // All questions answered for this topic
+        if (questionTextElement) questionTextElement.textContent = "Parabéns! Você respondeu todas as perguntas deste tópico!";
         if (hintsContainer) hintsContainer.innerHTML = '';
         if (answerContainer) answerContainer.classList.add('hidden');
         if (showAnswerButton) showAnswerButton.classList.add('hidden');
-        if (nextButton) nextButton.classList.add('hidden');
-        // Maybe add a "Restart" button here
+        if (hintTimerControls) hintTimerControls.classList.add('hidden');
+
+        if (questionSection) questionSection.classList.add('hidden'); // Hide question section
+        if (rouletteSection) rouletteSection.classList.remove('hidden'); // Show roulette section
+
+        if (rouletteDisplayElement) rouletteDisplayElement.textContent = "Tópico Concluído! Gire a roleta para um novo.";
+        if (spinButton) {
+            spinButton.onclick = spinRoulette; // Allow spinning for a new topic
+            spinButton.textContent = "Girar Roleta"; // Reset button text
+            spinButton.classList.remove('hidden'); // Ensure spin button is visible
+        }
         return;
     }
 
@@ -82,81 +124,172 @@ function pickRandomQuestion() {
     if (questionTextElement && selectedQuestionName) {
         questionTextElement.textContent = selectedQuestionName;
     }
+    
+    // Hide spin button during question answering phase
+    if (spinButton) spinButton.classList.add('hidden');
+    if (rouletteDisplayElement) rouletteDisplayElement.textContent = ""; // Clear roulette display when question is shown
 
     // Reset UI for new question
     if (hintsContainer) hintsContainer.innerHTML = '';
-    if (timerDisplay) timerDisplay.textContent = '';
+    // if (timerDisplay) timerDisplay.textContent = ''; // timerDisplay is no longer used for general timer
     if (answerContainer) answerContainer.classList.add('hidden');
-    if (showAnswerButton) showAnswerButton.classList.remove('hidden');
-    if (nextButton) nextButton.classList.add('hidden');
-    clearTimeout(countdownTimer); // Clear any previous timers
+    if (correctWrongContainer) correctWrongContainer.classList.add('hidden');
+    if (showAnswerButton) showAnswerButton.classList.remove('hidden'); // This button will now serve as "Answer Now" initially
+    if (hintTimerControls) hintTimerControls.classList.add('hidden');
 
-    // Hide roulette section
-    if (rouletteSection) {
-        rouletteSection.classList.add('hidden');
-    }
+    // Hide roulette section, show question section
+    if (rouletteSection) rouletteSection.classList.add('hidden');
+    if (questionSection) questionSection.classList.remove('hidden');
 
-    // Show question section
-    if (questionSection) {
-        questionSection.classList.remove('hidden');
-    }
-
-    displayHints();
+    startQuestion();
 }
 
-function displayHints() {
-    if (!hintsContainer || !selectedQuestionName || !currentTopicQuestions[selectedQuestionName]) {
+
+function startQuestion() {
+    if (questionSection) questionSection.classList.remove('hidden');
+    if (hintsContainer) hintsContainer.innerHTML = ''; // Clear previous hints
+    if (hintTimerControls) hintTimerControls.classList.remove('hidden');
+    if (answerContainer) answerContainer.classList.add('hidden');
+    if (correctWrongContainer) correctWrongContainer.classList.add('hidden');
+    if (showAnswerButton) showAnswerButton.classList.add('hidden'); // This button is replaced by answerNowButton
+
+    currentHintIndex = 0;
+    hintsUsedInQuestion = 0;
+    revealNextHint();
+}
+
+
+function revealNextHint() {
+    clearTimeout(hintCountdownTimer);
+    if (hintCountdownTimer !== undefined) {
+        clearInterval(hintCountdownTimer);
+        hintCountdownTimer = undefined;
+    }
+    if (hintTimerDisplay) hintTimerDisplay.textContent = ''; // Clear timer display immediately
+
+    if (!selectedQuestionName || !currentTopicQuestions[selectedQuestionName]) {
+        console.error("revealNextHint called but no question is selected or data is missing.");
+        resetQuestionStateAndSpinRoulette();
         return;
     }
 
-    hintsContainer.innerHTML = ''; // Clear previous hints
-
     const questionData = currentTopicQuestions[selectedQuestionName];
+    const hintKey = `Hint ${currentHintIndex + 1}`;
+    const hintText = questionData[hintKey];
 
-    for (let i = 1; i <= 4; i++) {
-        const hintKey = `Hint ${i}`;
-        const hintText = questionData[hintKey];
-
-        if (hintText) {
-            const hintButton = document.createElement('button');
-            hintButton.classList.add('hint-button');
-            hintButton.textContent = `Dica ${i}`; // Initial button text
-            hintButton.dataset.hintNumber = String(i); // Store hint number
-
-            let revealed = false; // Track if hint is revealed
-            hintButton.onclick = () => {
-                if (!revealed) {
-                    hintButton.textContent = hintText; // Reveal hint
-                    hintButton.disabled = true; // Disable button after revealing
-                    revealed = true;
-                    hintButton.classList.add('revealed-hint');
-                }
-            };
-            hintsContainer.appendChild(hintButton);
+    if (hintText) {
+        if (hintsContainer) {
+            const hintElement = document.createElement('p');
+            hintElement.classList.add('revealed-hint');
+            hintElement.textContent = `Dica ${currentHintIndex + 1}: ${hintText}`;
+            hintsContainer.appendChild(hintElement);
+            hintsUsedInQuestion++;
         }
+        currentHintIndex++;
+        if (nextHintButton) {
+            nextHintButton.disabled = (currentHintIndex >= 4); // Disable if no more hints
+        }
+        startHintTimer();
+    } else {
+        // No more hints, automatically reveal answer
+        if (hintTimerControls) hintTimerControls.classList.add('hidden');
+        revealAnswer();
     }
 }
 
-function startAnswerTimer() {
-    if (showAnswerButton) showAnswerButton.classList.add('hidden'); // Hide button once timer starts
 
-    let timeLeft = 10;
-    if (timerDisplay) timerDisplay.textContent = `Tempo restante: ${timeLeft}s`;
+function startHintTimer() {
+    let timeLeft = 15; // 15 seconds for hints
+    if (hintTimerDisplay) hintTimerDisplay.textContent = `Tempo para a próxima dica/resposta: ${timeLeft}s`;
 
-    countdownTimer = setInterval(() => {
+    clearTimeout(hintCountdownTimer); // Clear any setTimeout
+    if (hintCountdownTimer !== undefined) {
+        clearInterval(hintCountdownTimer); // Clear any setInterval
+    }
+    hintCountdownTimer = undefined;
+
+    hintCountdownTimer = setInterval(() => {
         timeLeft--;
-        if (timerDisplay) timerDisplay.textContent = `Tempo restante: ${timeLeft}s`;
+        if (hintTimerDisplay) hintTimerDisplay.textContent = `Tempo para a próxima dica/resposta: ${timeLeft}s`;
 
         if (timeLeft <= 0) {
-            clearInterval(countdownTimer);
-            revealAnswer();
+            if (hintCountdownTimer !== undefined) {
+                clearInterval(hintCountdownTimer);
+            }
+            hintCountdownTimer = undefined;
+            revealAnswer(); // Timer runs out, reveal answer
         }
     }, 1000);
 }
 
+
+function calculateScore(hintsUsed: number): number {
+    switch (hintsUsed) {
+        case 0: // Should not happen with current flow, as at least 1 hint is revealed
+        case 1: return 100;
+        case 2: return 75;
+        case 3: return 50;
+        case 4: return 25;
+        default: return 0;
+    }
+}
+
+
+function resetQuestionStateAndSpinRoulette() {
+    clearTimeout(hintCountdownTimer);
+    if (hintCountdownTimer !== undefined) {
+        clearInterval(hintCountdownTimer);
+        hintCountdownTimer = undefined;
+    }
+
+    selectedQuestionName = null;
+    hintsUsedInQuestion = 0;
+    currentHintIndex = 0;
+
+    // Reset UI elements
+    if (questionSection) questionSection.classList.add('hidden');
+    if (answerContainer) answerContainer.classList.add('hidden');
+    if (correctWrongContainer) correctWrongContainer.classList.add('hidden');
+    if (hintsContainer) hintsContainer.innerHTML = '';
+    if (hintTimerControls) hintTimerControls.classList.add('hidden');
+    if (hintTimerDisplay) hintTimerDisplay.textContent = '';
+    if (showAnswerButton) showAnswerButton.classList.add('hidden'); // Ensure this is hidden
+    if (rouletteDisplayElement) rouletteDisplayElement.textContent = ''; // Clear topic display
+
+    questionsAnsweredCount++;
+    if (questionsAnsweredCount % 5 === 0) {
+        alert(`Fim da rodada! Sua pontuação total: ${score} pontos.`);
+        // Optionally reset score for next round or continue accumulating
+        // score = 0; // Uncomment to reset score every 5 questions
+    }
+    if (scoreDisplayElement) {
+        scoreDisplayElement.textContent = `Score: ${score}`;
+    }
+
+    if (spinButton) {
+        spinButton.textContent = "Girar Roleta"; // Reset button text for new spin
+        spinButton.classList.remove('hidden'); // Ensure spin button is visible for next spin
+        spinButton.onclick = spinRoulette; // Set onclick for new spin
+    }
+    spinRoulette(); // Trigger the roulette to pick a new topic
+}
+
+
 function revealAnswer() {
+    clearTimeout(hintCountdownTimer);
+    if (hintCountdownTimer !== undefined) {
+        clearInterval(hintCountdownTimer);
+        hintCountdownTimer = undefined;
+    }
+
+    if (hintTimerControls) hintTimerControls.classList.add('hidden');
+    if (showAnswerButton) showAnswerButton.classList.add('hidden'); // Hide the old show answer button
+
     if (!selectedQuestionName || !currentTopicQuestions[selectedQuestionName]) {
-        console.warn("No question selected to reveal answer.");
+        console.error("revealAnswer called but question data is missing.");
+        console.error("selectedQuestionName:", selectedQuestionName);
+        console.error("currentTopicQuestions for selectedQuestionName:", currentTopicQuestions[selectedQuestionName]);
+        resetQuestionStateAndSpinRoulette(); // Go to next question if no answer
         return;
     }
 
@@ -172,23 +305,15 @@ function revealAnswer() {
     if (answerContainer) {
         answerContainer.classList.remove('hidden');
     }
-    if (timerDisplay) timerDisplay.textContent = ''; // Clear timer display
-    if (showAnswerButton) showAnswerButton.classList.add('hidden');
-    if (nextButton) nextButton.classList.remove('hidden'); // Show the next button
+    if (correctWrongContainer) {
+        correctWrongContainer.classList.remove('hidden');
+    }
+    // Ensure spin button is hidden when answer is revealed
+    if (spinButton) spinButton.classList.add('hidden');
 }
 
 
-if (spinButton) {
-    spinButton.addEventListener('click', pickRandomQuestion);
-}
 
-if (showAnswerButton) {
-    showAnswerButton.addEventListener('click', startAnswerTimer);
-}
-
-if (nextButton) {
-    nextButton.addEventListener('click', pickRandomQuestion);
-}
 
 // Theme switcher logic
 if (themeSwitch) {
@@ -216,8 +341,31 @@ function applyInitialTheme() {
     }
 }
 
-// Initialize on page load
+// --- Event Listeners ---
 document.addEventListener('DOMContentLoaded', () => {
-    loadTopicButtons();
+    spinRoulette(); // Start by spinning the roulette
     applyInitialTheme();
 });
+
+
+
+if (nextHintButton) {
+    nextHintButton.addEventListener('click', revealNextHint);
+}
+
+if (answerNowButton) {
+    answerNowButton.addEventListener('click', revealAnswer);
+}
+
+if (gotRightButton) {
+    gotRightButton.addEventListener('click', () => {
+        score += calculateScore(hintsUsedInQuestion);
+        resetQuestionStateAndSpinRoulette();
+    });
+}
+
+if (gotWrongButton) {
+    gotWrongButton.addEventListener('click', () => {
+        resetQuestionStateAndSpinRoulette();
+    });
+}
